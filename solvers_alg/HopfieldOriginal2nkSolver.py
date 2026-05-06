@@ -131,7 +131,10 @@ class HopfieldOriginalSolver(KMPSolver):
         #    break
             
         # Initialize our per run variables.
-        self._initialize_per_run_arrays()
+        if starter_facilities is not None:
+            self._initialize_per_run_arrays(starter_facilities)
+        else:
+            self._initialize_per_run_arrays()
         facility_stabilized = False
 
         iterations = 0
@@ -231,16 +234,21 @@ class HopfieldOriginalSolver(KMPSolver):
         self._selectedFacilities, self._solutionValue = self._calculate_facilities_and_distance()
         print(f"Distance: {self._solutionValue}")
 
-    def _initialize_per_run_arrays(self):
+    def _initialize_per_run_arrays(self, starter_facilities=None):
     
         self._facility_activation_values = torch.zeros(size=self._size, dtype=torch.int, device=self._device)
         #self._facility_inner_values = torch.zeros(size=self._size, device=self._device)
         self._facilities = torch.zeros(size=(1,self._num_rows), dtype=torch.int, device=self._device)
         self._active_facility_list = []
+
+        if starter_facilities is None:
+            initial_set = random.sample([i for i in range(0, self._n)], k=self._k)
+        else:
+            initial_set = starter_facilities
         
         # randomly pick k vertices as the starting facilities
         index = 0
-        for value in random.sample([i for i in range(0, self._n)], k=self._k):
+        for value in initial_set:
             self._facility_activation_values[value, index] = 1
             self._facilities[0,value] = 1
             self._active_facility_list.append(value)

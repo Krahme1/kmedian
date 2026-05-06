@@ -2,6 +2,7 @@ import os
 import time
 
 from ExperimentManager import ExperimentManager
+from solvers_alg.ZhangKFSolver import ZhangKFSolver
 from reader.CKMPJSONCoordinateReader import CKMPJSONCoordinateReader
 from reader.CKMPJSONDistanceReader import CKMPJSONDistanceReader
 from reader.KCPJSONCoordinateReader import KCPJSONCoordinateReader
@@ -49,6 +50,7 @@ from solvers_alg.LocalSearchSolver import LocalSearchSolver
 from solvers_alg.LocalSearchSolverKCenter import LocalSearchSolverKCenter
 from solvers_alg.PAMSolver import PAMSolver
 from solvers_alg.RandomizedSwapKCenterSolver import RandomizedSwapKCenterSolver
+from solvers_alg.SameiSolisObaKFSolver import SameiSolisObaKFSolver
 from solvers_alg.ZhuAlgorithmSolver import ZhuAlgorithmSolver
 from utils.user_input import get_input_arguments
 
@@ -453,6 +455,12 @@ if __name__ == '__main__':
                 case "1":
                     solver = HopfieldParallelKFSolver(use_gpu=args["use_gpu"])
 
+                case "2":
+                    solver = SameiSolisObaKFSolver(swap_size=args["parameters"]["swap_size"])
+
+                case "3":
+                    solver = ZhangKFSolver(swap_size=args["parameters"]["swap_size"], epsilon_prime=args["parameters"]["epsilon_prime"])
+
     problem_family = args["problem_family"]
 
     dataset_key = args["dataset"]
@@ -473,5 +481,6 @@ if __name__ == '__main__':
 
     problems = load_problems(dataset_path, dataset_key, args["use_gpu"], problem_family)
 
-    manager = ExperimentManager(problems, solver, problem_family, args["parameters"]["runs"])
+    runs = args["parameters"].get("runs", 1)
+    manager = ExperimentManager(problems, solver, problem_family, runs)
     manager.run(dataset_key)

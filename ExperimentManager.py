@@ -5,14 +5,16 @@ import time
 
 import numpy as np
 
-from solvers.brute_solver import calculate_distance, calculate_radius, calculate_distance_with_facility_cost, calculate_capacitated_distance
+from solvers.brute_solver import (calculate_capacitated_distance,
+                                  calculate_distance,
+                                  calculate_distance_with_facility_cost,
+                                  calculate_radius)
 from solvers_alg.AryaMultiSolver import AryaMultiSolver
 from solvers_alg.CohenAddadMultiSolver import CohenAddadMultiSolver
 from solvers_alg.CohenAddadSolver import CohenAddadSolver
 from solvers_alg.DominguezAlgorithmSolver import DominguezAlgorithmSolver
 from solvers_alg.DropWorstFacilityKCenterSolver import \
     DropWorstFacilityKCenterSolver
-from solvers_alg.HopfieldParallelKFSolver import HopfieldParallelKFSolver
 from solvers_alg.FarthestClientReassignmentKCenterSolver import \
     FarthestClientReassignmentKCenterSolver
 from solvers_alg.FarthestFirstKCenterSolver import FarthestFirstKCenterSolver
@@ -33,6 +35,7 @@ from solvers_alg.HopfieldOriginal2nkCKMPSolver import \
 from solvers_alg.HopfieldOriginal2nkSolver import HopfieldOriginalSolver
 from solvers_alg.HopfieldParallelCKMSolver import HopfieldParallelCKMSolver
 from solvers_alg.HopfieldParallelKCPSolver import HopfieldParallelKCPSolver
+from solvers_alg.HopfieldParallelKFSolver import HopfieldParallelKFSolver
 from solvers_alg.HopfieldSecondParallelSolver import \
     HopfieldSecondParallelSolver
 from solvers_alg.HopfieldThirdParallelSolver import HopfieldThirdParallelSolver
@@ -42,6 +45,7 @@ from solvers_alg.LocalSearchSolver import LocalSearchSolver
 from solvers_alg.LocalSearchSolverKCenter import LocalSearchSolverKCenter
 from solvers_alg.PAMSolver import PAMSolver
 from solvers_alg.RandomizedSwapKCenterSolver import RandomizedSwapKCenterSolver
+from solvers_alg.SameiSolisObaKFSolver import SameiSolisObaKFSolver
 from solvers_alg.ZhuAlgorithmSolver import ZhuAlgorithmSolver
 
 
@@ -51,7 +55,7 @@ class ExperimentManager():
         self._solver = solver
         self._problem_family = problem_family
         self._latest_results = []
-        self._num_runs = num_runs
+        self._num_runs = 1 if num_runs is None else num_runs
 
     def run(self, dataset_key):
         self._latest_results = []
@@ -191,14 +195,7 @@ class ExperimentManager():
                 end_time = time.time()
                 total_time = end_time - start_time
 
-                if self._problem_family == "1":
-                    distance = calculate_distance(problem.getGraph(), facilities, problem.getN())
-                elif self._problem_family == "2":
-                    distance = calculate_radius(problem.getGraph(), facilities)
-                elif self._problem_family == "4":
-                    distance = calculate_distance_with_facility_cost(problem.getGraph(), facilities, problem.getFacilityCost(),  problem.getN())
-                else:
-                    raise ValueError("Unknown problem family")
+                distance = self._solver.getSolutionValue()
                 
                 ratio = distance / optimal_distance
                 self._latest_results.append((test_name, n, k, ratio, total_time, distance))
@@ -404,5 +401,7 @@ def verify_kcenter_solution(graph, selected_facilities, k, reported_radius, tole
             f"recomputed={recomputed_radius}, diff={difference}"
         )
 
+    print("Verification passed.")
+    return recomputed_radius
     print("Verification passed.")
     return recomputed_radius

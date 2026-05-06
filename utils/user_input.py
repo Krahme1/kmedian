@@ -62,7 +62,9 @@ def get_algorithm():
     
     elif args["problem_family"] == "4":
         print("\t1: Parallel Hopfield K-Facility Location")
-        return input("Enter a value 1: ")
+        print("\t2: Samei Solis Oba Multi Swap K-Facility Location")
+        print("\t3: Zhang's Multi Swap K-Facility Location")
+        return input("Enter a value 1-3: ")
     
     else:
         print("Invalid problem family selection.")
@@ -376,6 +378,32 @@ def get_parameters(algorithm_selection):
             else:
                 parameters["runs"] = int(input_runs)
             return parameters
+        
+        elif algorithm_selection == "2":
+            swap_size = input("\nEnter Swap Size for Multi Swap (Default is 1): ")
+            if len(swap_size) == 0:
+                print("Using default: 1")
+                parameters["swap_size"] = 1
+            else:
+                parameters["swap_size"] = int(swap_size)
+            return parameters
+        
+        elif algorithm_selection == "3":
+            swap_size = input("\nEnter Swap Size for Multi Swap (Default is 1): ")
+            if len(swap_size) == 0:
+                print("Using default: 1")
+                parameters["swap_size"] = 1
+            else:
+                parameters["swap_size"] = int(swap_size)
+
+            epsilon_prime = input("\nEnter Epsilon Prime for Zhang's Algorithm (Default is 0.1): ")
+            if len(epsilon_prime) == 0:
+                print("Using default: 0.1")
+                parameters["epsilon_prime"] = 0.1
+            else:                
+                parameters["epsilon_prime"] = float(epsilon_prime)
+            return parameters
+
 
     return None
 

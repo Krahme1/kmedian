@@ -62,11 +62,13 @@ class HopfieldParallelKFSolver(KFSolver):
         if self._graph is None or self._n is None or self._k is None:
             raise ValueError("Graph, n, and k must be set before calling initialize().")
 
-        # Initialize distance values
+        # Initialize distance values.
+        # For k-facility location, we use the normal normalized distances because
+        # the objective is a minimization objective: assignment distance + opening cost.
         if self._use_gpu:
-            self._distance_values = 1 - self._graph._gpu_normalized_distances
+            self._distance_values = self._graph._gpu_normalized_distances
         else:
-            self._distance_values = (1 - self._graph._normalized_distances).clone().detach()
+            self._distance_values = self._graph._normalized_distances.clone().detach()
 
         if self._distance_values.ndim != 2:
             raise ValueError(
@@ -191,6 +193,8 @@ class HopfieldParallelKFSolver(KFSolver):
 
         print(f"Converged in {iterations} iterations.")
         self._selectedFacilities, self._solutionValue = self._calculate_facilities_and_distance()
+        print("Number of selected facilities:", len(self._selectedFacilities))
+        print("Selected facilities:", self._selectedFacilities)
         print(f"Distance: {self._solutionValue}")
 
 
@@ -228,24 +232,35 @@ class HopfieldParallelKFSolver(KFSolver):
 
     def _update_client(self):
         self._client_activation_values = torch.zeros(size=self._size, dtype=torch.int, device=self._device)
-        # Find the maximum value in each row of client_inner_values and set corresponding activation to 1
-        max_indices = torch.argmax(self._client_inner_values, dim=1)
-        self._client_activation_values[self._math_row_indices, max_indices] = 1
+        # Each client is assigned to the closest currently active facility.
+        min_indices = torch.argmin(self._client_inner_values, dim=1)
+        self._client_activation_values[self._math_row_indices, min_indices] = 1
 
     def _calculate_facility_values(self):
         C = self._client_activation_values.to(self._distance_values.dtype)    # (n,k)
         self._facility_inner_values = self._distance_values.t() @ C           # (n,n)^T @ (n,k) -> (n,k)
 
-        self._facility_inner_values -= self._normalized_cost_values.unsqueeze(1)  # Subtract normalized cost from each column
+        # Opening cost is a penalty in the k-facility objective, so it is added
+        # to the assignment distance score for each candidate facility.
+        self._facility_inner_values += self._normalized_cost_values.unsqueeze(1)
 
     def _update_facility(self):
         self._facility_activation_values = torch.zeros(size=self._size, dtype=torch.int, device=self._device)
         chosen = []
+        used_facilities = set()
 
         for q in range(self._k):
-            costs = self._facility_inner_values[:, q]  # (n,)
-            j = torch.argmax(costs).item()
+            costs = self._facility_inner_values[:, q].clone()  # (n,)
+
+            # Prevent duplicate facilities across clusters.
+            # Each cluster q should choose a different facility, otherwise the solution
+            # may contain fewer than k unique open facilities.
+            for used in used_facilities:
+                costs[used] = float("inf")
+
+            j = torch.argmin(costs).item()
             chosen.append(j)
+            used_facilities.add(j)
             self._facility_activation_values[j, q] = 1
 
         self._active_facility_list = chosen

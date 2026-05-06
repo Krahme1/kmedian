@@ -97,19 +97,7 @@ def calculate_distance_with_facility_cost(graph, facilities, facility_costs, n=N
     sum of client-to-nearest-facility distances plus the opening cost
     of the selected facilities.
 
-    Parameters
-    ----------
-    graph : object
-        Graph-like object containing `graph._distances`.
-    facilities : list or tensor
-        Indices of the selected facilities.
-    facility_costs : list, tensor, or dict
-        Opening cost for each facility index.
-    n : unused
-        Kept only for consistency with the other helper functions.
     """
-    if len(facilities) == 0:
-        raise ValueError("facilities must contain at least one selected facility.")
 
     # Distance part: each client is assigned to its nearest selected facility.
     distance_sub_graph = graph._distances[facilities]
