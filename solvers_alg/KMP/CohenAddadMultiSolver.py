@@ -1,0 +1,135 @@
+import random
+import time
+
+import numpy as np
+import pandas as pd
+import torch
+
+from problems.KMProblem import KMProblem
+from solvers_alg.KMP.KMPSolver import KMPSolver
+
+
+class CohenAddadMultiSolver(KMPSolver):
+    def __init__(self, max_time, solution=None):
+        self._name = "Cohen-Addad Multi"
+        self._solutionValue = 0
+        self._selectedFacilities = []
+
+        self._graph = None
+        self._n = None
+        self._k = None
+        self._max_time = max_time
+        self._check_counter = 0
+        self._swap_counter = 0
+
+        self._solution = solution
+        self._vertices = None
+
+        self._maxTime = 0
+
+    def initialize(self, problem:KMProblem):
+        self._graph = problem.getGraph()
+        self._n = problem.getN()
+        self._k = problem.getK()
+        if self._graph is None or self._n is None or self._k is None:
+            raise ValueError("Graph, n, and k must be set before calling initialize().")
+
+        # prepare the initial vertices
+        if self._solution:
+            vertices = []
+            for i in range(self._n):
+                if i in self._solution:
+                    vertices.append(1)
+                else:
+                    vertices.append(0)
+        else:
+            vertices = [0 for _ in range(self._n)]
+            # randomly pick k vertices
+            for value in random.sample([i for i in range(0, self._n)], k=self._k):
+                vertices[value] = 1
+        self._vertices = torch.tensor(vertices)
+        
+        if self._n > 6000 and self._k > 2000:
+            self._maxTime = 200
+        elif self._n > 6000 and self._k <= 2000:
+            self._maxTime = 100
+        elif self._n < 1000:
+            self._maxTime = 5
+        elif self._n > 1000 and self._k < 1000:
+            self._maxTime = 10
+        elif self._n > 1000 and self._k >= 1000:
+            self._maxTime = 15
+        else:
+            self._maxTime = 15
+
+    def getName(self):
+        return self._name
+    
+    def getSelectedFacilities(self):
+        return self._selectedFacilities
+    
+    def getSolutionValue(self):
+        return self._solutionValue
+    
+    def setN (self, n):
+        self._n = n
+
+    def setK (self, k):
+        self._k = k
+
+    def setGraph (self, graph):
+        self._graph = graph
+
+    def solve(self, runNum=None):
+        """
+        Randomly select a client and compare swapping it with each facility.
+        If the distance is improved, we select the swap pair that decreases the distance the most.
+        Otherwise, keep the original state.
+
+        :return: None
+        """
+        start_time = time.time()
+        best_distance = self.calculate_distance(self._vertices)
+        while True:
+            if time.time() - start_time >= self._maxTime:
+                break
+            open_locations = [i for i in range(self._n) if self._vertices[i] == 0]
+            facilities = [i for i in range(self._n) if self._vertices[i] == 1]
+            has_swapped = False
+            while has_swapped is False:
+                if time.time() - start_time >= self._maxTime:
+                    break
+                client1, client2 = random.sample(open_locations, k=2)
+                facility1, facility2 = random.sample(facilities, k=2)
+                self._check_counter += 1
+                temp_vertices = self._vertices.detach().clone()
+                temp_vertices[facility1] = 0
+                temp_vertices[facility2] = 0
+                temp_vertices[client1] = 1
+                temp_vertices[client2] = 1
+                new_distance = self.calculate_distance(temp_vertices)
+                if new_distance < (1 - (1 / self._n)) * best_distance:
+                    best_distance = new_distance
+                    self._vertices[facility1] = 0
+                    self._vertices[facility2] = 0
+                    self._vertices[client1] = 1
+                    self._vertices[client2] = 1
+                    has_swapped = True
+                    self._swap_counter += 1   
+
+        self._selectedFacilities = [i for i in range(self._n) if self._vertices[i] == 1]
+        self._solutionValue = best_distance
+
+    def calculate_distance(self, vertices):
+        """
+        Helper function to get the total distance of all clients to their nearest facility.
+
+        :param vertices: The solution to check
+        :return: The sum of distances from clients to their nearest facility.
+        """
+        values, _ = torch.topk(vertices * (1 - self._graph._normalized_distances), k=2, dim=1)        
+        closest = 1 - values[:,0]
+        secondClosest = 1 - values[:,1]
+        costs = closest + (0.2 * torch.minimum(secondClosest,(3 * closest)))
+        ret = torch.sum(costs)
+        return ret
