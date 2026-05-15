@@ -1,6 +1,7 @@
 import random
 
 import torch
+from initializers.pam_build_initializer import PAMBuildInitializer
 
 from problems.KMProblem import KMProblem
 from solvers_alg.solvers.brute_solver import calculate_distance
@@ -190,64 +191,8 @@ class HopfieldParallelSolver(KMPSolver):
 
     # Greedy BUILD initializer
     def _warm_start_facilities_greedy_deterministic(self) -> list[int]:
-        # Work on CPU for simple deterministic indexing and masking.
-        D = self._distance_values.detach().to("cpu")
-        num_candidates = D.shape[1]
-
-        # D stores similarity (1 - normalized distance), so we maximize totals.
-        # First facility: argmax_f sum_i D[i, f]
-        col_sums = D.sum(dim=0)
-        first_facility = torch.argmax(col_sums).item()
-
-        selected = [first_facility]
-        selected_mask = torch.zeros(num_candidates, dtype=torch.bool)
-        selected_mask[first_facility] = True
-
-        # Maintain max similarity to selected set for each client i.
-        current_max_sim = D[:, first_facility].clone()
-
-        for _ in range(1, self._k):
-            # For each candidate f, compute sum_i max(current_max_sim[i], D[i, f]).
-            candidate_scores = torch.maximum(current_max_sim.unsqueeze(1), D).sum(dim=0)
-            candidate_scores[selected_mask] = float("-inf")
-
-            next_facility = torch.argmax(candidate_scores).item()
-            selected.append(next_facility)
-            selected_mask[next_facility] = True
-
-            # Update maintained maximum similarities.
-            current_max_sim = torch.maximum(current_max_sim, D[:, next_facility])
-
-        return selected
-
-    # Optional random first greedy initializer (currently not used).
-    def _warm_start_facilities_greedy_random_first(self) -> list[int]:
-        D = self._distance_values.detach().to("cpu")
-        num_candidates = D.shape[1]
-
-        # First facility: random, controlled by solver-local RNG.
-        first_facility = self._rng.randrange(num_candidates)
-
-        selected = [first_facility]
-        selected_mask = torch.zeros(num_candidates, dtype=torch.bool)
-        selected_mask[first_facility] = True
-
-        # Maintain max similarity to selected set for each client i.
-        current_max_sim = D[:, first_facility].clone()
-
-        for _ in range(1, self._k):
-            # For each candidate f, compute sum_i max(current_max_sim[i], D[i, f]).
-            candidate_scores = torch.maximum(current_max_sim.unsqueeze(1), D).sum(dim=0)
-            candidate_scores[selected_mask] = float("-inf")
-
-            next_facility = torch.argmax(candidate_scores).item()
-            selected.append(next_facility)
-            selected_mask[next_facility] = True
-
-            # Update maintained maximum similarities.
-            current_max_sim = torch.maximum(current_max_sim, D[:, next_facility])
-
-        return selected
+        initializer = PAMBuildInitializer()
+        return initializer.initialize(self._graph, self._matrix_n, self._k)
 
     def _calculate_client_values(self):
         self._client_inner_values[:,:] = self._distance_values[:,self._active_facility_list]
