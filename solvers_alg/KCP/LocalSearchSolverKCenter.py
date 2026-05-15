@@ -2,7 +2,7 @@ import random
 import sys
 import time
 
-from solvers.brute_solver import calculate_radius
+from solvers_alg.solvers.brute_solver import calculate_radius
 import torch
 
 from problems.KCProblem import KCProblem

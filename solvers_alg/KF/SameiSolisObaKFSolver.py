@@ -1,7 +1,7 @@
 import itertools
 
 from problems.KFProblem import KFProblem
-from solvers.brute_solver import calculate_distance_with_facility_cost
+from solvers_alg.solvers.brute_solver import calculate_distance_with_facility_cost
 from solvers_alg.KF.KFSolver import KFSolver
 
 

@@ -4,7 +4,7 @@ import random
 import numpy as np
 
 from problems.KMProblem import KMProblem
-from solvers.brute_solver import calculate_distance, get_facilities
+from solvers_alg.solvers.brute_solver import calculate_distance, get_facilities
 from solvers_alg.KMP.KMPSolver import KMPSolver
 
 

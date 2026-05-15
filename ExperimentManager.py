@@ -5,7 +5,7 @@ import time
 
 import numpy as np
 
-from solvers.brute_solver import (calculate_capacitated_distance,
+from solvers_alg.solvers.brute_solver import (calculate_capacitated_distance,
                                   calculate_distance,
                                   calculate_distance_with_facility_cost,
                                   calculate_radius)

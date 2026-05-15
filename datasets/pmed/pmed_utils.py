@@ -4,7 +4,7 @@ import time
 
 import numpy as np
 
-from solvers.brute_solver import calculate_distance
+from solvers_alg.solvers.brute_solver import calculate_distance
 from utils.graph import DistanceGraph
 
 

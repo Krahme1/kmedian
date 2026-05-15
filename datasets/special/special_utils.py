@@ -2,7 +2,7 @@ import json
 import os
 import time
 
-from solvers.brute_solver import calculate_distance
+from solvers_alg.solvers.brute_solver import calculate_distance
 from utils.graph import DistanceGraph
 
 

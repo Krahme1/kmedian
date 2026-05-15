@@ -3,7 +3,7 @@ import random
 import numpy as np
 import torch
 from problems.CKMProblem import CKMProblem
-from solvers.brute_solver import calculate_distance
+from solvers_alg.solvers.brute_solver import calculate_distance
 
 from solvers_alg.CKMP.CKMPSolver import CKMPSolver
 

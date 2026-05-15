@@ -5,7 +5,7 @@ import json
 import time
 
 from algorithms import algorithm_interface
-from solvers.brute_solver import calculate_distance
+from solvers_alg.solvers.brute_solver import calculate_distance
 from utils.graph import DistanceGraph
 from utils.seeding import seed_all
 

@@ -1,7 +1,7 @@
 from docplex.mp.model import Model
 
 from problems.KFProblem import KFProblem
-from solvers.brute_solver import calculate_distance
+from solvers_alg.solvers.brute_solver import calculate_distance
 from solvers_alg.KF.KFSolver import KFSolver
 
 

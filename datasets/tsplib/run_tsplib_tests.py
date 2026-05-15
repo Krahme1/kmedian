@@ -9,7 +9,7 @@ import torch
 
 from algorithms import algorithm_interface
 from datasets.tsplib.load_tsplib_test import load_test
-from solvers.brute_solver import calculate_distance
+from solvers_alg.solvers.brute_solver import calculate_distance
 from utils.graph import DistanceGraph, CoordinateGraph
 from utils.seeding import seed_all
 

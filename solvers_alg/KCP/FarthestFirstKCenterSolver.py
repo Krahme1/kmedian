@@ -1,7 +1,7 @@
 import torch
 
 from problems.KCProblem import KCProblem
-from solvers.brute_solver import calculate_radius
+from solvers_alg.solvers.brute_solver import calculate_radius
 from solvers_alg.KCP.KCPSolver import KCPSolver
 
 

@@ -3,7 +3,7 @@ import random
 import torch
 
 from problems.KMProblem import KMProblem
-from solvers.brute_solver import calculate_distance
+from solvers_alg.solvers.brute_solver import calculate_distance
 from solvers_alg.KMP.KMPSolver import KMPSolver
 
 
