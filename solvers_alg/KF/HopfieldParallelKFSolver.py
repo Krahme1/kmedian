@@ -1,3 +1,4 @@
+import math
 import random
 
 import torch
@@ -8,6 +9,76 @@ from solvers_alg.KF.KFSolver import KFSolver
 
 
 class HopfieldParallelKFSolver(KFSolver):
+    def _verify_solution_feasibility_and_cost(self, selected_facilities):
+        """
+        Independently verifies the final K-facility solution.
+
+        This does not use the Hopfield client activation matrix. Instead, it assigns
+        every client to the closest selected facility using the graph distance method,
+        then adds the opening costs of the selected facilities.
+        """
+        if selected_facilities is None or len(selected_facilities) == 0:
+            raise ValueError("Solution verification failed: no facilities were selected.")
+
+        if len(selected_facilities) != self._k:
+            raise ValueError(
+                "Solution verification failed: expected exactly "
+                f"{self._k} selected facilities, got {len(selected_facilities)}."
+            )
+
+        if len(set(selected_facilities)) != len(selected_facilities):
+            raise ValueError(
+                "Solution verification failed: duplicate facilities were selected. "
+                f"Selected facilities = {selected_facilities}."
+            )
+
+        for facility in selected_facilities:
+            if facility < 0 or facility >= self._n:
+                raise ValueError(
+                    "Solution verification failed: selected facility is outside the valid range. "
+                    f"Facility = {facility}, valid range = [0, {self._n - 1}]."
+                )
+
+        assignments = []
+        assignment_distances = []
+
+        for client in range(self._n):
+            closest_facility = None
+            closest_distance = float("inf")
+
+            for facility in selected_facilities:
+                distance = self._graph.get_standard_distance(client, facility)
+                if distance < closest_distance:
+                    closest_distance = distance
+                    closest_facility = facility
+
+            if closest_facility is None:
+                raise ValueError(
+                    "Solution verification failed: client was not assigned to any facility. "
+                    f"Client = {client}."
+                )
+
+            assignments.append(closest_facility)
+            assignment_distances.append(float(closest_distance))
+
+        if len(assignments) != self._n:
+            raise ValueError(
+                "Solution verification failed: not every client received an assignment. "
+                f"Assigned clients = {len(assignments)}, expected clients = {self._n}."
+            )
+
+        assignment_cost = math.fsum(assignment_distances)
+
+        if isinstance(self._costs, dict):
+            opening_cost = math.fsum(float(self._costs[facility]) for facility in selected_facilities)
+        elif isinstance(self._costs, torch.Tensor):
+            opening_cost = math.fsum(float(self._costs[facility].item()) for facility in selected_facilities)
+        else:
+            opening_cost = math.fsum(float(self._costs[facility]) for facility in selected_facilities)
+
+        verified_cost = math.fsum([assignment_cost, opening_cost])
+        return verified_cost, assignments
+    
     def __init__(self, use_gpu, seed=None):
         self._name = "Hopfield Parallel Solver"
         self._solutionValue = None
@@ -193,9 +264,35 @@ class HopfieldParallelKFSolver(KFSolver):
 
         print(f"Converged in {iterations} iterations.")
         self._selectedFacilities, self._solutionValue = self._calculate_facilities_and_distance()
+        verified_cost, assignments = self._verify_solution_feasibility_and_cost(self._selectedFacilities)
+
         print("Number of selected facilities:", len(self._selectedFacilities))
         print("Selected facilities:", self._selectedFacilities)
         print(f"Distance: {self._solutionValue}")
+        print(f"Verified distance: {verified_cost}")
+
+        if len(assignments) == self._n:
+            print(f"Verification passed: all {self._n} clients were assigned to a facility.")
+        else:
+            raise ValueError(
+                "Solution verification failed: some clients were not assigned. "
+                f"Assigned {len(assignments)} out of {self._n} clients."
+            )
+
+        cost_difference = abs(float(self._solutionValue) - float(verified_cost))
+        tolerance = 1e-4
+
+        if cost_difference > tolerance:
+            raise ValueError(
+                "Solution verification failed: solver cost does not match independently recomputed cost. "
+                f"Solver cost = {self._solutionValue}, verified cost = {verified_cost}, "
+                f"difference = {cost_difference}."
+            )
+        else:
+            print(
+                "Verification passed: solver cost matches independently recomputed cost "
+                f"within tolerance {tolerance}. Difference = {cost_difference}."
+            )
 
 
     def _initialize_per_run_arrays(self, starter_facilities):

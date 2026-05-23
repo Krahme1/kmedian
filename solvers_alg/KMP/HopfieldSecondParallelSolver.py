@@ -130,6 +130,47 @@ class HopfieldSecondParallelSolver(KMPSolver):
     def setGraph(self, graph):
         self._graph = graph
 
+    def _compute_rho_values(self):
+        """
+        Compute rho_q for each cluster q.
+
+        rho_q = beta * (1 / |C_q|) * sum_{i in C_q} d_{i, F_q}
+        where C_q is the set of clients currently assigned to cluster q,
+        and F_q is the currently active facility for cluster q.
+        """
+        assignments = torch.argmax(self._client_activation_values, dim=1)
+
+        facilities = torch.tensor(
+            self._active_facility_list,
+            dtype=torch.long,
+            device=self._device
+        )
+
+        assigned_facilities = facilities[assignments]
+        assigned_distances = self._distance_values[
+            self._math_row_indices,
+            assigned_facilities
+        ]
+
+        sums = torch.zeros(
+            self._k,
+            dtype=self._distance_values.dtype,
+            device=self._device
+        )
+        counts = torch.zeros(
+            self._k,
+            dtype=self._distance_values.dtype,
+            device=self._device
+        )
+
+        sums.scatter_add_(0, assignments, assigned_distances)
+        counts.scatter_add_(0, assignments, torch.ones_like(assigned_distances))
+
+        rho = self._beta * sums / torch.clamp(counts, min=1)
+        rho[counts == 0] = 0.0
+
+        return rho
+
     def solve(self, runNum=None, starter_facilities=None):
         best_facilities = starter_facilities
         best_distance = (
@@ -317,19 +358,20 @@ class HopfieldSecondParallelSolver(KMPSolver):
         self._client_activation_values = new_client_activation_values
         # =================================================
 
-    def _calculate_facility_values(self, D_minus_q):
+    def _calculate_facility_values(self, D_minus_q, chunk_size=1024):
         # =================================================
         # Section 1.2 facility potential:
         #
         # pfjq(t) = sum_{i : d_ij <= D^-_{qi}(t)} d_ij + delta_jq(t)
         #
         # delta_jq(t) =
-        #   gamma * (rho_jq(t) - D^-_{qj}(t))   if D^-_{qj}(t) < rho_jq(t)
+        #   gamma * (rho_q(t) - D^-_{qj}(t))   if D^-_{qj}(t) < rho_q(t)
         #   0                                  otherwise
         #
-        # where rho_jq(t) = beta * (k/n) * sum_i d_ij f_jq(t)
-        # Since f_jq(t) is binary, rho_jq(t) is nonzero only for the currently
-        # active facility of cluster q, matching the paper as written.
+        # where rho_q(t) is computed from only the clients currently assigned
+        # to cluster q:
+        #
+        # rho_q(t) = beta * (1 / |C_q|) * sum_{i in C_q} d_{i, F_q}
         # =================================================
         PF = torch.empty(
             (self._matrix_n, self._k),
@@ -337,34 +379,31 @@ class HopfieldSecondParallelSolver(KMPSolver):
             device=self._device
         )
 
+        rho = self._compute_rho_values()
+
         for q in range(self._k):
             Dq = D_minus_q[:, q]
+            base = torch.empty(
+                self._matrix_n,
+                dtype=self._distance_values.dtype,
+                device=self._device
+            )
 
-            for j in range(self._matrix_n):
-                # =================================================
-                # Constrained sum: only clients i with d_ij <= D^-_{qi}(t)
-                # contribute to facility j in cluster q.
-                # =================================================
-                mask = self._distance_values[:, j] <= Dq
-                overlap_sum = torch.sum(self._distance_values[mask, j])
+            # base[j] = sum_i d_ij over clients satisfying d_ij <= D^-_{qi}(t)
+            for start in range(0, self._matrix_n, chunk_size):
+                end = min(start + chunk_size, self._matrix_n)
+                block = self._distance_values[:, start:end]
 
-                # =================================================
-                # Penalty term from Section 1.2 as written in the paper.
-                # =================================================
-                rho_jq = (
-                    self._beta * (self._k / self._matrix_n) *
-                    torch.sum(self._distance_values[:, j] * self._facility_activation_values[j, q])
-                )
+                base[start:end] = torch.where(
+                    block <= Dq[:, None],
+                    block,
+                    torch.zeros_like(block)
+                ).sum(dim=0)
 
-                facility_competitor_distance = Dq[j]
+            # For candidate facility j, Dq[j] is D^-_{qj}(t).
+            delta = self._gamma * torch.clamp(rho[q] - Dq, min=0.0)
 
-                if facility_competitor_distance < rho_jq:
-                    delta = self._gamma * (rho_jq - facility_competitor_distance)
-                else:
-                    delta = 0.0
-                # =================================================
-
-                PF[j, q] = overlap_sum + delta
+            PF[:, q] = base + delta
 
         self._facility_inner_values = PF
 

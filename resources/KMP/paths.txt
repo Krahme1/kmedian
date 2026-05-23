@@ -4,3 +4,8 @@
 4 = pmed/input
 5 = tsplib/input
 6 = special/input
+7 = barabasi/input
+8 = erdos_renyi/input
+9 = path_grid/input
+10 = trees/input
+11 = sbm/input
