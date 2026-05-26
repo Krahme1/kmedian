@@ -96,7 +96,7 @@ def load_problems(dataset_path, dataset_key, use_gpu, problem_family):
     """
     if problem_family == "1":
         # K-Median Problem
-        if dataset_key in ["1", "2", "3"]:
+        if dataset_key in ["1", "2", "3", "9"]:
             # Nested coordinate datasets
             problems = {}
 
@@ -157,9 +157,34 @@ def load_problems(dataset_path, dataset_key, use_gpu, problem_family):
                     print(f"⚠️ Failed to read {file_path}: {e}")
             return problems
         
-    elif problem_family == "2":
+        if dataset_key in ["7", "8", "10", "11"]:
+            # Nested distance datasets
+            problems = {}
+
+            for subdir in sorted(os.listdir(dataset_path)):
+                subdir_path = os.path.join(dataset_path, subdir)
+                if not os.path.isdir(subdir_path):
+                    continue
+
+                problems[subdir] = []
+                for filename in os.listdir(subdir_path):
+                    if not filename.endswith(".json"):
+                        continue
+                    file_path = os.path.join(subdir_path, filename)
+                    try:
+                        reader = KMPJSONDistanceReader()
+                        if reader.canRead(file_path):
+                            problem = reader.parse(file_path, use_gpu)
+                            problems[subdir].append(problem)
+                        else:
+                            print(f"⚠️ Skipped {file_path}: cannot read")
+                    except Exception as e:
+                        print(f"⚠️ Failed to read {file_path}: {e}")
+            return problems
+        
+    elif problem_family in ["2", "3", "4"]:
         # K-Center Problem
-        if dataset_key in ["1", "2", "3"]:
+        if dataset_key in ["1"]:
             # Nested coordinate datasets
             problems = {}
 
@@ -183,7 +208,7 @@ def load_problems(dataset_path, dataset_key, use_gpu, problem_family):
                     except Exception as e:
                         print(f"⚠️ Failed to read {file_path}: {e}")
             return problems
-        elif dataset_key in ["4", "6"]:
+        elif dataset_key in ["2", "3"]:
             # Flat distance datasets
             problems = []
 
@@ -193,150 +218,6 @@ def load_problems(dataset_path, dataset_key, use_gpu, problem_family):
                 file_path = os.path.join(dataset_path, filename)
                 try:
                     reader = KCPJSONDistanceReader()
-                    if reader.canRead(file_path):
-                        problem = reader.parse(file_path, use_gpu)
-                        problems.append(problem)
-                    else:
-                        print(f"⚠️ Skipped {file_path}: cannot read")
-                except Exception as e:
-                    print(f"⚠️ Failed to read {file_path}: {e}")
-            return problems
-        elif dataset_key in ["5"]:
-            # Flat coordinate datasets
-            problems = []
-
-            for filename in sorted(os.listdir(dataset_path)):
-                if not filename.endswith(".json"):
-                    continue
-                file_path = os.path.join(dataset_path, filename)
-                try:
-                    reader = KCPJSONCoordinateReader()
-                    if reader.canRead(file_path):
-                        problem = reader.parse(file_path, use_gpu)
-                        problems.append(problem)
-                    else:
-                        print(f"⚠️ Skipped {file_path}: cannot read")
-                except Exception as e:
-                    print(f"⚠️ Failed to read {file_path}: {e}")
-            return problems
-        
-    elif problem_family == "3":
-        # K-Center Problem
-        if dataset_key in ["1", "2", "3"]:
-            # Nested coordinate datasets
-            problems = {}
-
-            for subdir in sorted(os.listdir(dataset_path)):
-                subdir_path = os.path.join(dataset_path, subdir)
-                if not os.path.isdir(subdir_path):
-                    continue
-
-                problems[subdir] = []
-                for filename in os.listdir(subdir_path):
-                    if not filename.endswith(".json"):
-                        continue
-                    file_path = os.path.join(subdir_path, filename)
-                    try:
-                        reader = CKMPJSONCoordinateReader()
-                        if reader.canRead(file_path):
-                            problem = reader.parse(file_path, use_gpu)
-                            problems[subdir].append(problem)
-                        else:
-                            print(f"⚠️ Skipped {file_path}: cannot read")
-                    except Exception as e:
-                        print(f"⚠️ Failed to read {file_path}: {e}")
-            return problems
-        elif dataset_key in ["4", "6"]:
-            # Flat distance datasets
-            problems = []
-
-            for filename in sorted(os.listdir(dataset_path)):
-                if not filename.endswith(".json"):
-                    continue
-                file_path = os.path.join(dataset_path, filename)
-                try:
-                    reader = CKMPJSONDistanceReader()
-                    if reader.canRead(file_path):
-                        problem = reader.parse(file_path, use_gpu)
-                        problems.append(problem)
-                    else:
-                        print(f"⚠️ Skipped {file_path}: cannot read")
-                except Exception as e:
-                    print(f"⚠️ Failed to read {file_path}: {e}")
-            return problems
-        elif dataset_key in ["5"]:
-            # Flat coordinate datasets
-            problems = []
-
-            for filename in sorted(os.listdir(dataset_path)):
-                if not filename.endswith(".json"):
-                    continue
-                file_path = os.path.join(dataset_path, filename)
-                try:
-                    reader = CKMPJSONCoordinateReader()
-                    if reader.canRead(file_path):
-                        problem = reader.parse(file_path, use_gpu)
-                        problems.append(problem)
-                    else:
-                        print(f"⚠️ Skipped {file_path}: cannot read")
-                except Exception as e:
-                    print(f"⚠️ Failed to read {file_path}: {e}")
-            return problems
-        
-    elif problem_family == "4":
-        # K-Center Problem
-        if dataset_key in ["1", "2", "3"]:
-            # Nested coordinate datasets
-            problems = {}
-
-            for subdir in sorted(os.listdir(dataset_path)):
-                subdir_path = os.path.join(dataset_path, subdir)
-                if not os.path.isdir(subdir_path):
-                    continue
-
-                problems[subdir] = []
-                for filename in os.listdir(subdir_path):
-                    if not filename.endswith(".json"):
-                        continue
-                    file_path = os.path.join(subdir_path, filename)
-                    try:
-                        reader = KFJSONCoordinateReader()
-                        if reader.canRead(file_path):
-                            problem = reader.parse(file_path, use_gpu)
-                            problems[subdir].append(problem)
-                        else:
-                            print(f"⚠️ Skipped {file_path}: cannot read")
-                    except Exception as e:
-                        print(f"⚠️ Failed to read {file_path}: {e}")
-            return problems
-        elif dataset_key in ["4", "6"]:
-            # Flat distance datasets
-            problems = []
-
-            for filename in sorted(os.listdir(dataset_path)):
-                if not filename.endswith(".json"):
-                    continue
-                file_path = os.path.join(dataset_path, filename)
-                try:
-                    reader = KFJSONDistanceReader()
-                    if reader.canRead(file_path):
-                        problem = reader.parse(file_path, use_gpu)
-                        problems.append(problem)
-                    else:
-                        print(f"⚠️ Skipped {file_path}: cannot read")
-                except Exception as e:
-                    print(f"⚠️ Failed to read {file_path}: {e}")
-            return problems
-        elif dataset_key in ["5"]:
-            # Flat coordinate datasets
-            problems = []
-
-            for filename in sorted(os.listdir(dataset_path)):
-                if not filename.endswith(".json"):
-                    continue
-                file_path = os.path.join(dataset_path, filename)
-                try:
-                    reader = CKMPJSONCoordinateReader()
                     if reader.canRead(file_path):
                         problem = reader.parse(file_path, use_gpu)
                         problems.append(problem)
@@ -466,18 +347,37 @@ if __name__ == '__main__':
     dataset_key = args["dataset"]
     dataset_path = get_data_path(dataset_key, problem_family)
 
-    match dataset_key:
-        case "1": print(f"\nTesting algorithm {solver.getName()} on dataset Random-Small")
+    if problem_family == "1":
+        match dataset_key:
+            case "1": print(f"\nTesting algorithm {solver.getName()} on dataset Random-Small")
 
-        case "2": print(f"\nTesting algorithm {solver.getName()} on dataset Random-Large")
+            case "2": print(f"\nTesting algorithm {solver.getName()} on dataset Random-Large")
 
-        case "3": print(f"\nTesting algorithm {solver.getName()} on dataset USCA312")
+            case "3": print(f"\nTesting algorithm {solver.getName()} on dataset USCA312")
 
-        case "4": print(f"\nTesting algorithm {solver.getName()} on dataset P-Median")
+            case "4": print(f"\nTesting algorithm {solver.getName()} on dataset P-Median")
 
-        case "5": print(f"\nTesting algorithm {solver.getName()} on dataset TSPLib")
+            case "5": print(f"\nTesting algorithm {solver.getName()} on dataset TSPLib")
 
-        case "6": print(f"\nTesting algorithm {solver.getName()} on dataset Special")
+            case "6": print(f"\nTesting algorithm {solver.getName()} on dataset Special")
+
+            case "7": print(f"\nTesting algorithm {solver.getName()} on dataset Barabasi")
+
+            case "8": print(f"\nTesting algorithm {solver.getName()} on dataset Erdos-renyi")
+
+            case "9": print(f"\nTesting algorithm {solver.getName()} on dataset Path-Grid")
+
+            case "10": print(f"\nTesting algorithm {solver.getName()} on dataset Trees")
+
+            case "11": print(f"\nTesting algorithm {solver.getName()} on dataset SBM")
+
+    if problem_family in ["2", "3", "4"]:
+        match dataset_key:
+            case "1": print(f"\nTesting algorithm {solver.getName()} on dataset Random-Small")
+
+            case "2": print(f"\nTesting algorithm {solver.getName()} on dataset P-Median")
+
+            case "3": print(f"\nTesting algorithm {solver.getName()} on dataset Special")
 
     problems = load_problems(dataset_path, dataset_key, args["use_gpu"], problem_family)
 

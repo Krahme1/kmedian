@@ -47,6 +47,7 @@ from solvers_alg.KMP.PAMSolver import PAMSolver
 from solvers_alg.KCP.RandomizedSwapKCenterSolver import RandomizedSwapKCenterSolver
 from solvers_alg.KF.SameiSolisObaKFSolver import SameiSolisObaKFSolver
 from solvers_alg.KMP.ZhuAlgorithmSolver import ZhuAlgorithmSolver
+from solvers_alg.KF.HopfieldOriginalDummy import HopfieldOriginalDummy
 
 
 class ExperimentManager():
@@ -60,16 +61,29 @@ class ExperimentManager():
     def run(self, dataset_key):
         self._latest_results = []
 
-        if dataset_key in ["4", "5"]:
-            # Case 1: list of test sets
-            self._run_from_list(dataset_key)
-        elif dataset_key in ["1", "2", "3"]:
-            # Case 2: dict of directories (e.g., {"pmed": tests_object})
-            self._run_from_directory_dict(dataset_key)
-        elif dataset_key == "6":
-            self._run_special(dataset_key)
-        else:
-            raise TypeError("Did not pass a list of problems to Experiment Manage")
+        if self._problem_family == "1":
+            if dataset_key in ["4", "5"]:
+                # Case 1: list of test sets
+                self._run_from_list(dataset_key)
+            elif dataset_key in ["1", "2", "3", "7", "8", "9", "10", "11"]:
+                # Case 2: dict of directories (e.g., {random})
+                self._run_from_directory_dict(dataset_key)
+            elif dataset_key == "6":
+                self._run_special(dataset_key)
+            else:
+                raise TypeError("Did not pass a list of problems to Experiment Manage")
+            
+        elif self._problem_family in ["2", "3", "4"]:
+            if dataset_key == "2":
+                # Case 1: list of test sets
+                self._run_from_list(dataset_key)
+            elif dataset_key == "1":
+                # Case 2: dict of directories (e.g., {random})
+                self._run_from_directory_dict(dataset_key)
+            elif dataset_key == "3":
+                self._run_special(dataset_key)
+            else:
+                raise TypeError("Did not pass a list of problems to Experiment Manager")
 
         # Save results
         self._save_results_to_csv(self._latest_results, dataset_key)
@@ -211,43 +225,81 @@ class ExperimentManager():
         if len(results) == 0:
             return
 
-        if dataset_key in ["4", "5", "6"]:
-            # Original value
-            full_name = results[0][0]
-            # Keep only the letters at the start
-            match = re.match(r"[a-zA-Z]+", full_name)
-            first_name = match.group(0) if match else "dataset"
-            # Replace spaces just in case (optional)
-            first_name = first_name.replace(" ", "_")
-            output_filename = f"results_{first_name}.csv"
-            has_name = True
-        elif dataset_key in ["1", "2", "3"]:
-            # Use timestamp if no names
-            timestamp = time.strftime("%Y%m%d_%H%M%S")
-            output_filename = f"results_{timestamp}.csv"
-            has_name = False
+        if self._problem_family == "1":
+            if dataset_key in ["4", "5", "6"]:
+                # Original value
+                full_name = results[0][0]
+                # Keep only the letters at the start
+                match = re.match(r"[a-zA-Z]+", full_name)
+                first_name = match.group(0) if match else "dataset"
+                # Replace spaces just in case (optional)
+                first_name = first_name.replace(" ", "_")
+                output_filename = f"results_{first_name}.csv"
+                has_name = True
+            elif dataset_key in ["1", "2", "3", "7", "8", "9", "10", "11"]:
+                # Use timestamp if no names
+                timestamp = time.strftime("%Y%m%d_%H%M%S")
+                output_filename = f"results_{timestamp}.csv"
+                has_name = False
+
+        elif self._problem_family in ["2", "3", "4"]:
+            if dataset_key in ["2", "3"]:
+                # Use timestamp if no names
+                timestamp = time.strftime("%Y%m%d_%H%M%S")
+                output_filename = f"results_{timestamp}.csv"
+                has_name = False
+            elif dataset_key == "1":
+                # Original value
+                full_name = results[0][0]
+                # Keep only the letters at the start
+                match = re.match(r"[a-zA-Z]+", full_name)
+                first_name = match.group(0) if match else "dataset"
+                # Replace spaces just in case (optional)
+                first_name = first_name.replace(" ", "_")
+                output_filename = f"results_{first_name}.csv"
+                has_name = True
 
         # Get the directory where this file (ExperimentManager) is located
         base_dir = os.path.dirname(os.path.abspath(__file__))
         if output_path is None:
             output_path = os.path.join(base_dir, output_filename)
 
-        # Build appropriate header
-        if has_name and dataset_key in ["4", "5"]:
-            header = [
-                "Instance", "N", "K", "Min Ratio", "Average Ratio", "Max Ratio",
-                "Min Time", "Average Time", "Max Time",
-                "Standard Deviation (Ratio)", "Standard Deviation (Time)"
+
+        if self._problem_family == "1":
+            # Build appropriate header
+            if has_name and dataset_key in ["4", "5"]:
+                header = [
+                    "Instance", "N", "K", "Min Ratio", "Average Ratio", "Max Ratio",
+                    "Min Time", "Average Time", "Max Time",
+                    "Standard Deviation (Ratio)", "Standard Deviation (Time)"
+                ]
+            elif dataset_key == "6":
+                header = [
+                    "Instance", "N", "K", "Ratio", "Total Time", "Distance"
             ]
-        elif dataset_key == "6":
-            header = [
-                "Instance", "N", "K", "Ratio", "Total Time", "Distance"
-        ]
-        else:
-            header = [
-                "N", "K", "Min Ratio", "Average Ratio", "Max Ratio",
-                "Min Time", "Average Time", "Max Time",
-                "Standard Deviation (Ratio)", "Standard Deviation (Time)"
+            else:
+                header = [
+                    "N", "K", "Min Ratio", "Average Ratio", "Max Ratio",
+                    "Min Time", "Average Time", "Max Time",
+                    "Standard Deviation (Ratio)", "Standard Deviation (Time)"
+            ]
+                
+        elif self._problem_family in ["2", "3", "4"]:
+            if has_name and dataset_key in ["2"]:
+                header = [
+                    "Instance", "N", "K", "Min Ratio", "Average Ratio", "Max Ratio",
+                    "Min Time", "Average Time", "Max Time",
+                    "Standard Deviation (Ratio)", "Standard Deviation (Time)"
+                ]
+            elif dataset_key == "3":
+                header = [
+                    "Instance", "N", "K", "Ratio", "Total Time", "Distance"
+            ]
+            else:
+                header = [
+                    "N", "K", "Min Ratio", "Average Ratio", "Max Ratio",
+                    "Min Time", "Average Time", "Max Time",
+                    "Standard Deviation (Ratio)", "Standard Deviation (Time)"
             ]
 
         results.sort(key=lambda r: ((r[1], r[2]) if len(r) == 11 else (r[0], r[1])))
@@ -257,32 +309,54 @@ class ExperimentManager():
             writer = csv.writer(f)
             writer.writerow(header)
 
-            for r in results:
-                if dataset_key in ["4", "5"]:
-                    name, n, k, min_ratio, avg_ratio, max_ratio, min_time, avg_time, max_time, std_ratio, std_time = r
-                    writer.writerow([
-                        name, n, k,
-                        f"{min_ratio:.3f}", f"{avg_ratio:.3f}", f"{max_ratio:.3f}",
-                        f"{min_time:.3f}", f"{avg_time:.3f}", f"{max_time:.3f}",
-                        f"{std_ratio:.3f}", f"{std_time:.3f}"
+            if self._problem_family == "1":
+                for r in results:
+                    if dataset_key in ["4", "5"]:
+                        name, n, k, min_ratio, avg_ratio, max_ratio, min_time, avg_time, max_time, std_ratio, std_time = r
+                        writer.writerow([
+                            name, n, k,
+                            f"{min_ratio:.3f}", f"{avg_ratio:.3f}", f"{max_ratio:.3f}",
+                            f"{min_time:.3f}", f"{avg_time:.3f}", f"{max_time:.3f}",
+                            f"{std_ratio:.3f}", f"{std_time:.3f}"
+                        ])
+                    elif dataset_key == "6":
+                        writer.writerow([
+                            r[0], r[1], r[2], f"{r[3]:.3f}", f"{r[4]:.3f}", f"{r[5]:.3f}"
                     ])
-                elif dataset_key == "6":
-                    writer.writerow([
-                        r[0], r[1], r[2], f"{r[3]:.3f}", f"{r[4]:.3f}", f"{r[5]:.3f}"
-                ])
-                else:
-                    n, k, min_ratio, avg_ratio, max_ratio, min_time, avg_time, max_time, std_ratio, std_time = r
-                    writer.writerow([
-                        n, k,
-                        f"{min_ratio:.3f}", f"{avg_ratio:.3f}", f"{max_ratio:.3f}",
-                        f"{min_time:.3f}", f"{avg_time:.3f}", f"{max_time:.3f}",
-                        f"{std_ratio:.3f}", f"{std_time:.3f}"
+                    else:
+                        n, k, min_ratio, avg_ratio, max_ratio, min_time, avg_time, max_time, std_ratio, std_time = r
+                        writer.writerow([
+                            n, k,
+                            f"{min_ratio:.3f}", f"{avg_ratio:.3f}", f"{max_ratio:.3f}",
+                            f"{min_time:.3f}", f"{avg_time:.3f}", f"{max_time:.3f}",
+                            f"{std_ratio:.3f}", f"{std_time:.3f}"
+                        ])
+
+            elif self._problem_family in ["2", "3", "4"]:
+                for r in results:
+                    if dataset_key in ["2"]:
+                        name, n, k, min_ratio, avg_ratio, max_ratio, min_time, avg_time, max_time, std_ratio, std_time = r
+                        writer.writerow([
+                            name, n, k,
+                            f"{min_ratio:.3f}", f"{avg_ratio:.3f}", f"{max_ratio:.3f}",
+                            f"{min_time:.3f}", f"{avg_time:.3f}", f"{max_time:.3f}",
+                            f"{std_ratio:.3f}", f"{std_time:.3f}"
+                        ])
+                    elif dataset_key == "3":
+                        writer.writerow([
+                            r[0], r[1], r[2], f"{r[3]:.3f}", f"{r[4]:.3f}", f"{r[5]:.3f}"
                     ])
+                    else:
+                        n, k, min_ratio, avg_ratio, max_ratio, min_time, avg_time, max_time, std_ratio, std_time = r
+                        writer.writerow([
+                            n, k,
+                            f"{min_ratio:.3f}", f"{avg_ratio:.3f}", f"{max_ratio:.3f}",
+                            f"{min_time:.3f}", f"{avg_time:.3f}", f"{max_time:.3f}",
+                            f"{std_ratio:.3f}", f"{std_time:.3f}"
+                        ])
 
         if announce:
             print(f"\n✅ Results saved to {output_path}")
-
-
 
 import math
 

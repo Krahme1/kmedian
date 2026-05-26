@@ -403,21 +403,47 @@ def get_parameters(algorithm_selection):
             else:                
                 parameters["epsilon_prime"] = float(epsilon_prime)
             return parameters
-
+        
 
     return None
 
 
 def get_datasets():
-    print("\nSelect Dataset:")
-    print("\t1: Random-Small")
-    print("\t2: Random-Large")
-    print("\t3: USCA312")
-    print("\t4: OR-Library P-Median")
-    print("\t5: TSPLib")
-    print("\t6: Special")
-
-    return input("Enter a value 1-6: ")
+    if args["problem_family"] == "1":
+        print("\nSelect Dataset:")
+        print("\t1: Random-Small")
+        print("\t2: Random-Large")
+        print("\t3: USCA312")
+        print("\t4: OR-Library K-Median")
+        print("\t5: TSPLib")
+        print("\t6: Special")
+        print("\t7: Barabasi")
+        print("\t8: erdos_renyi")
+        print("\t9: path_grid")
+        print("\t10: trees")
+        print("\t11: sbm")
+        return input("Enter a value 1-11: ")
+    
+    elif args["problem_family"] == "2":
+        print("\nSelect Dataset:")
+        print("\t1: Random-Small")
+        print("\t2: OR-Library K-Center")
+        print("\t3: Special")
+        return input("Enter a value 1-3: ")
+    
+    elif args["problem_family"] == "3":
+        print("\nSelect Dataset:")
+        print("\t1: Random-Small")
+        print("\t2: OR-Library Capacitated K-Median")
+        print("\t3: Special")
+        return input("Enter a value 1-3: ")
+    
+    elif args["problem_family"] == "4":
+        print("\nSelect Dataset:")
+        print("\t1: Random-Small")
+        print("\t2: OR-Library K-Facility Location")
+        print("\t3: Special")
+        return input("Enter a value 1-3: ")
 
 
 def get_gpu_setting():
