@@ -11,10 +11,10 @@ from reader.KFJSONCoordinateReader import KFJSONCoordinateReader
 from reader.KFJSONDistanceReader import KFJSONDistanceReader
 from reader.KMPJSONCoordinateReader import KMPJSONCoordinateReader
 from reader.KMPJSONDistanceReader import KMPJSONDistanceReader
-from solvers_alg.KMP.AryaMultiSolver import AryaMultiSolver
-from solvers_alg.KMP.CohenAddadMultiSolver import CohenAddadMultiSolver
-from solvers_alg.KMP.CohenAddadSolver import CohenAddadSolver
-from solvers_alg.KMP.DominguezAlgorithmSolver import DominguezAlgorithmSolver
+from solvers_alg.KMP.Main.AryaMultiSolver import AryaMultiSolver
+from solvers_alg.KMP.Main.CohenAddadMultiSolver import CohenAddadMultiSolver
+from solvers_alg.KMP.Main.CohenAddadSolver import CohenAddadSolver
+from solvers_alg.KMP.Main.DominguezAlgorithmSolver import DominguezAlgorithmSolver
 from solvers_alg.KCP.DropWorstFacilityKCenterSolver import \
     DropWorstFacilityKCenterSolver
 from solvers_alg.KCP.FarthestClientReassignmentKCenterSolver import \
@@ -22,36 +22,36 @@ from solvers_alg.KCP.FarthestClientReassignmentKCenterSolver import \
 from solvers_alg.KCP.FarthestFirstKCenterSolver import FarthestFirstKCenterSolver
 from solvers_alg.KCP.GreedyAddRemoveKCenterSolver import \
     GreedyAddRemoveKCenterSolver
-from solvers_alg.KMP.HaralampievAlgorithmSolver import HaralampievAlgorithmSolver
-from solvers_alg.KMP.HopfieldAlgorithmSolver import HopfieldAlgorithmSolver
-from solvers_alg.KMP.HopfieldBestHalfMultiAlgorithmSolver import \
+from solvers_alg.KMP.Main.HaralampievAlgorithmSolver import HaralampievAlgorithmSolver
+from solvers_alg.KMP.Main.CodySolver import HopfieldAlgorithmSolver
+from solvers_alg.KMP.Legacy.HopfieldBestHalfMultiAlgorithmSolver import \
     HopfieldBestHalfMultiSolver
-from solvers_alg.KMP.HopfieldBestHalfSecondClosestAlgorithmSolver import \
+from solvers_alg.KMP.Legacy.HopfieldBestHalfSecondClosestAlgorithmSolver import \
     HopfieldBestHalfSecondClosestAlgorithmSolver
-from solvers_alg.KMP.HopfieldBestHalfSingleSolver import \
+from solvers_alg.KMP.Legacy.HopfieldBestHalfSingleSolver import \
     HopfieldBestHalfSingleSolver
-from solvers_alg.KMP.HopfieldExhaustiveAlgorithmSolver import \
+from solvers_alg.KMP.Main.MARN import \
     HopfieldExhaustiveAlgorithmSolver
 from solvers_alg.CKMP.HopfieldOriginal2nkCKMPSolver import \
     HopfieldOriginal2nkCKMPSolver
-from solvers_alg.KMP.HopfieldOriginal2nkSolver import HopfieldOriginalSolver
+from solvers_alg.KMP.Main.ARN import HopfieldOriginalSolver
 from solvers_alg.KCP.HopfieldOriginal2nkSolverKCenter import \
     HopfieldOriginal2nkSolverKCenter
 from solvers_alg.CKMP.HopfieldParallelCKMSolver import HopfieldParallelCKMSolver
 from solvers_alg.KCP.HopfieldParallelKCPSolver import HopfieldParallelKCPSolver
 from solvers_alg.KF.HopfieldParallelKFSolver import HopfieldParallelKFSolver
-from solvers_alg.KMP.HopfieldParallelSolver import HopfieldParallelSolver
-from solvers_alg.KMP.HopfieldSecondParallelSolver import \
+from solvers_alg.KMP.Experimental.SolisV1Solver import HopfieldParallelSolver
+from solvers_alg.KMP.Experimental.SolisV2Solver import \
     HopfieldSecondParallelSolver
-from solvers_alg.KMP.HopfieldThirdParallelSolver import HopfieldThirdParallelSolver
-from solvers_alg.KMP.InterchangeAlgorithmSolver import InterchangeAlgorithmSolver
+from solvers_alg.KMP.Experimental.SolisV3Solver import HopfieldThirdParallelSolver
+from solvers_alg.KMP.Main.InterchangeAlgorithmSolver import InterchangeAlgorithmSolver
 from solvers_alg.KCP.LocalRecenterKCenterSolver import LocalRecenterKCenterSolver
-from solvers_alg.KMP.LocalSearchSolver import LocalSearchSolver
+from solvers_alg.KMP.Main.LocalSearchSolver import LocalSearchSolver
 from solvers_alg.KCP.LocalSearchSolverKCenter import LocalSearchSolverKCenter
-from solvers_alg.KMP.PAMSolver import PAMSolver
+from solvers_alg.KMP.Experimental.PAMSolver import PAMSolver
 from solvers_alg.KCP.RandomizedSwapKCenterSolver import RandomizedSwapKCenterSolver
 from solvers_alg.KF.SameiSolisObaKFSolver import SameiSolisObaKFSolver
-from solvers_alg.KMP.ZhuAlgorithmSolver import ZhuAlgorithmSolver
+from solvers_alg.KMP.Main.ZhuAlgorithmSolver import ZhuAlgorithmSolver
 from utils.user_input import get_input_arguments
 
 # -------------------------------

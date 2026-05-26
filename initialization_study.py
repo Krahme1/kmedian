@@ -17,7 +17,7 @@ import torch
 from reader.KMPJSONCoordinateReader import KMPJSONCoordinateReader
 from reader.KMPJSONDistanceReader import KMPJSONDistanceReader
 from solvers_alg.solvers.brute_solver import calculate_distance
-from solvers_alg.KMP.HopfieldOriginal2nkSolver import HopfieldOriginalSolver
+from solvers_alg.KMP.Main.ARN import HopfieldOriginalSolver
 
 from initializers.uniform_initializer import UniformInitializer
 from initializers.dq_sampling_initializer import DQSamplingInitializer
