@@ -1,4 +1,4 @@
-from solvers_alg.Solver import Solver
+from solvers_alg.solver import Solver
 
 
 class FLSolver(Solver):
