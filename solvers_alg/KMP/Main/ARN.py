@@ -94,6 +94,9 @@ class HopfieldOriginalSolver(KMPSolver):
         else:
             self._full_distance_values = (1 - self._graph._normalized_distances).clone().detach()
         
+        # _full_distance_values = 1 - normalized distance = the paper's "modified
+        # distance" D'. Bigger value means CLOSER, so the algorithm can maximize
+        # reward instead of minimizing raw distance.
         self._distance_values = self._full_distance_values
 
         # These are the two sets of 2nk neurons
@@ -151,6 +154,7 @@ class HopfieldOriginalSolver(KMPSolver):
 
         iterations = 0
         
+        # ===== MAIN LOOP: swap out the weakest facility until no swap improves =====
         while not facility_stabilized:
             
             max_values, max_indices = torch.max(self._facility_inner_values, dim=1)
@@ -159,6 +163,9 @@ class HopfieldOriginalSolver(KMPSolver):
             # Determine which of the facilities has the lowest inner value and deactivate it
             #self._sorted_facility_inner_values, self._sorted_facility_indices = torch.sort(max_values)
             #worstFacility = self._sorted_facility_indices[self._n - self._k]
+            # The k active facilities have the highest inner values. The WEAKEST
+            # active facility is the smallest of those k -- that's the one we try
+            # to replace this round (the key idea that makes ARN fast).
             self._sorted_facility_inner_values, self._sorted_facility_indices = torch.topk(max_values, self._k)
             worstFacility = self._sorted_facility_indices[self._k-1]
             
@@ -179,6 +186,9 @@ class HopfieldOriginalSolver(KMPSolver):
             self._candidatefacility_inner_values = facility_values * self._candidatefacility_inner_values          
             
             #self._candidatefacility_inner_values = torch.where(self._candidatefacility_inner_values > client_max_values, self._candidatefacility_inner_values - client_max_values, 0) 
+            # clamp_min_(0) is the paper's delta function: keep only the POSITIVE
+            # gain a candidate node would give a client over its next-best facility.
+            # Summing these per candidate = how much that node would improve things.
             self._candidatefacility_inner_values = (self._candidatefacility_inner_values - client_max_values).clamp_min_(0) # This is faster
             #"""
             
@@ -214,6 +224,8 @@ class HopfieldOriginalSolver(KMPSolver):
             sumAfter = torch.sum(max_values_after).item()
             self._facilities[0,bestFacility] = 1
             
+            # If the best swap did NOT improve the total, undo it and stop:
+            # we've reached a local optimum (no single swap helps anymore).
             if sumBefore >= sumAfter:
                 facility_stabilized = True
                 self._facility_activation_values[bestFacility.item(),max_indices[worstFacility]] = 0
@@ -242,6 +254,7 @@ class HopfieldOriginalSolver(KMPSolver):
     #return best_facilities
     #current_time = time.time()
     #print("Energy: ",max(sumBefore,sumAfter)," Time: ",current_time - start_time)
+        # Loop finished -> read out the chosen facilities and the total distance.
         print(f"Converged in {iterations} iterations.")
         self._selectedFacilities, self._solutionValue = self._calculate_facilities_and_distance()
         print(f"Distance: {self._solutionValue}")

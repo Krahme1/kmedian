@@ -163,6 +163,8 @@ class HopfieldExhaustiveAlgorithmSolver(KMPSolver):
             current_time = time.time()
             if current_time - self.start_time >= self.maxTime:
                 break  
+            # Run fast ARN to a local optimum, then let MARN try ALL facilities
+            # to escape it. Repeat until MARN can't improve things either.
             self.ARN()
             facility_stabilized = self.MARN()
 
@@ -255,6 +257,9 @@ class HopfieldExhaustiveAlgorithmSolver(KMPSolver):
         #print("ARN COMPLETE. Energy: ",max(sumBefore,sumAfter)," Time: ",current_time - self.start_time)
         return
 
+    # MARN's exhaustive step: unlike ARN (which only swaps the single weakest
+    # facility), this tries replacing facilities one by one and keeps the best
+    # improving swap it finds -- that's what makes MARN more accurate than ARN.
     def MARN(self):
         
         max_values, max_indices = torch.max(self._facility_inner_values, dim=1)
@@ -265,6 +270,8 @@ class HopfieldExhaustiveAlgorithmSolver(KMPSolver):
         self._client_inner_values_copy = self._client_inner_values.detach().clone()
         self._facility_activation_values_copy = self._facility_activation_values.detach().clone()
         self._client_activation_values_copy = self._client_activation_values.detach().clone()
+        # Try replacing facilities one at a time (weaker ones first). This
+        # loop over multiple facilities is the "exhaustive" part ARN skips.
         for innerLoop in range(1, self._k):
             current_time = time.time()
             if current_time - self.start_time >= self.maxTime:
@@ -301,6 +308,9 @@ class HopfieldExhaustiveAlgorithmSolver(KMPSolver):
                 bestSolutionFacilityToActivate = bestFacility.item()
                 bestSolutionFacilityToDeactivate = worstFacility.item()
                 break
+        # If any facility swap improved the total, apply the best one and keep
+        # going (return False = not done). If none helped, we're at a true local
+        # optimum across all single swaps (return True = stop).
         if bestSolution > sumBefore:
             self._facility_activation_values[bestSolutionFacilityToActivate,max_indices[bestSolutionFacilityToDeactivate]] = 1
             self._facility_activation_values[bestSolutionFacilityToDeactivate,max_indices[bestSolutionFacilityToDeactivate]] = 0
