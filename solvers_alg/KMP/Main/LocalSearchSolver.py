@@ -1,3 +1,10 @@
+# =============================================================
+#  Local Search for k-median
+#  Menu option : 3  ("Local Search Algorithm")
+#  Class name  : LocalSearchSolver
+#  Classic swap-based method: repeatedly swap a facility for a
+#  non-facility node while it improves the solution.
+# =============================================================
 import random
 import sys
 import time

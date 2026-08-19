@@ -1,3 +1,10 @@
+# =============================================================
+#  Arya et al. local search for k-median (LS in the paper)
+#  Menu option : 5  ("Arya Multi Swap")
+#  Class name  : AryaMultiSolver
+#  The well-known local-search algorithm with a provable
+#  approximation guarantee; supports multi-swaps.
+# =============================================================
 import random
 import time
 

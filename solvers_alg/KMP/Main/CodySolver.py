@@ -1,3 +1,9 @@
+# =============================================================
+#  Cody Rossiter's Hopfield network for k-median
+#  Menu option : 1  ("Modified Hopfield Algorithm")
+#  Class name  : HopfieldAlgorithmSolver
+#  An earlier Hopfield-style network; predates ARN/MARN.
+# =============================================================
 import random
 
 import numpy as np

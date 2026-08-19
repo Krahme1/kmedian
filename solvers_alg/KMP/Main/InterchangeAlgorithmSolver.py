@@ -1,3 +1,9 @@
+# =============================================================
+#  Resende & Werneck's Fast Interchange for k-median (FI in the paper)
+#  Menu option : 13  ("Fast Interchange")
+#  Class name  : InterchangeAlgorithmSolver
+#  An efficient swap-based local-search method (comparison baseline).
+# =============================================================
 import random
 import sys
 import time

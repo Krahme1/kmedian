@@ -1,3 +1,9 @@
+# =============================================================
+#  Cohen-Addad et al. local search for k-median (SC in the paper)
+#  Menu option : 6  ("Cohen-Addad Local Search")
+#  Class name  : CohenAddadSolver
+#  A more recent local-search method used as a comparison baseline.
+# =============================================================
 import random
 import time
 

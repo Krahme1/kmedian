@@ -1,3 +1,9 @@
+# =============================================================
+#  Dominguez & Munoz's recurrent neural network (NA-L in the paper)
+#  Menu option : 14  ("Dominguez NAL")
+#  Class name  : DominguezAlgorithmSolver
+#  A competing neural-network method used as a comparison baseline.
+# =============================================================
 import random
 import time
 

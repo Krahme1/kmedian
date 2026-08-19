@@ -1,3 +1,9 @@
+# =============================================================
+#  Cohen-Addad et al. local search - multi-swap version
+#  Menu option : 7  ("Cohen-Addad's Multi Swap")
+#  Class name  : CohenAddadMultiSolver
+#  Like option 6, but allows swapping several facilities at once.
+# =============================================================
 import random
 import time
 

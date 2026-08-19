@@ -1,3 +1,9 @@
+# =============================================================
+#  Pan & Zhu's local search for k-median
+#  Menu option : 4  ("Zhu's algorithm MRA")
+#  Class name  : ZhuAlgorithmSolver
+#  A competing local-search method used as a comparison baseline.
+# =============================================================
 import random
 import sys
 import time

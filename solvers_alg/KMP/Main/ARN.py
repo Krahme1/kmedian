@@ -1,3 +1,15 @@
+# =============================================================
+#  ARN  (Asymmetric Resonance Network) - the paper's FAST method
+# -------------------------------------------------------------
+#  Menu option : 8  ("2nk Original Single Hopfield")
+#  Class name  : HopfieldOriginalSolver
+#  Paper       : "A Resonance Neural Network for the K-Median Problem"
+#  What it does: Each round it finds the single weakest facility
+#                (lowest inner value) and swaps in the one node that
+#                improves the solution most. Stops when no swap helps.
+#                Only re-checking the weakest facility is what makes
+#                it fast.
+# =============================================================
 import random
 
 import numpy as np

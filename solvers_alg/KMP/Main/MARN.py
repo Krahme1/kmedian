@@ -1,3 +1,14 @@
+# =============================================================
+#  MARN  (Modified Asymmetric Resonance Network) - the ACCURATE method
+# -------------------------------------------------------------
+#  Menu option : 12  ("2nk Exhaustive Hopfield")
+#  Class name  : HopfieldExhaustiveAlgorithmSolver
+#  Paper       : "A Resonance Neural Network for the K-Median Problem"
+#  What it does: Like ARN, but considers replacing ANY facility (all
+#                possible single swaps), not just the weakest one. A
+#                bit slower than ARN, but more accurate - it can escape
+#                weaker local optima that ARN gets stuck in.
+# =============================================================
 import random
 import time
 

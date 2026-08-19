@@ -1,3 +1,9 @@
+# =============================================================
+#  Haralampiev's competition-based neural network for k-median
+#  Menu option : 2  ("Haralampiev's Algorithm")
+#  Class name  : HaralampievAlgorithmSolver
+#  A competing neural-network method used as a comparison baseline.
+# =============================================================
 import math
 import random
 
