@@ -111,21 +111,21 @@ class ExperimentManager():
             elapsedTime = end_time - start_time
             times.append(elapsedTime)
 
-            # if self._problem_family == "1":  # k-median
-            #     verify_kmedian_solution(
-            #         graph=problem.getGraph(),
-            #         selected_facilities=facilities,
-            #         k=problem.getK(),
-            #         reported_cost=self._solver.getSolutionValue()
-            #     )
+            if self._problem_family == "1":  # k-median
+                verify_kmedian_solution(
+                    graph=problem.getGraph(),
+                    selected_facilities=facilities,
+                    k=problem.getK(),
+                    reported_cost=self._solver.getSolutionValue()
+                )
 
-            # elif self._problem_family == "2":  # k-center
-            #     verify_kcenter_solution(
-            #         graph=problem.getGraph(),
-            #         selected_facilities=facilities,
-            #         k=problem.getK(),
-            #         reported_radius=self._solver.getSolutionValue()
-            #     )
+            elif self._problem_family == "2":  # k-center
+                verify_kcenter_solution(
+                    graph=problem.getGraph(),
+                    selected_facilities=facilities,
+                    k=problem.getK(),
+                    reported_radius=self._solver.getSolutionValue()
+                )
 
             if elapsedTime > maxTime:
                 maxTime = elapsedTime
@@ -364,13 +364,19 @@ import math
 def verify_selected_facilities(selected_facilities, k):
     """
     Basic checks common to k-median and k-center.
+    Spec: at most k facilities are selected, and there are no duplicates.
     """
-    if len(selected_facilities) != k:
+    # Coerce to plain ints so set()/indexing behave regardless of input type.
+    selected = [int(f) for f in selected_facilities]
+
+    # At most k facilities (some problems may legitimately use fewer than k).
+    if len(selected) > k:
         raise ValueError(
-            f"Wrong number of selected facilities: got {len(selected_facilities)}, expected {k}"
+            f"Too many selected facilities: got {len(selected)}, expected at most {k}"
         )
 
-    if len(set(selected_facilities)) != k:
+    # No duplicate facilities.
+    if len(set(selected)) != len(selected):
         raise ValueError(
             f"Duplicate facilities detected: {selected_facilities}"
         )
@@ -391,7 +397,7 @@ def recompute_kmedian_cost(graph, selected_facilities):
     for client in range(n):
         best_distance = math.inf
         for facility in selected_facilities:
-            d = float(distance_matrix[facility, client])
+            d = float(distance_matrix[int(facility), client])
             if d < best_distance:
                 best_distance = d
         total_cost += best_distance
@@ -417,7 +423,7 @@ def recompute_kcenter_radius(graph, selected_facilities):
     for client in range(n):
         best_distance = math.inf
         for facility in selected_facilities:
-            d = float(distance_matrix[facility, client])
+            d = float(distance_matrix[int(facility), client])
             if d < best_distance:
                 best_distance = d
         radius = max(radius, best_distance)
@@ -475,7 +481,5 @@ def verify_kcenter_solution(graph, selected_facilities, k, reported_radius, tole
             f"recomputed={recomputed_radius}, diff={difference}"
         )
 
-    print("Verification passed.")
-    return recomputed_radius
     print("Verification passed.")
     return recomputed_radius
