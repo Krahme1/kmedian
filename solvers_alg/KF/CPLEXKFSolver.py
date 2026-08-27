@@ -122,8 +122,8 @@ class CPLEXKFSolver(KFSolver):
 
         # open exactly k facilities
         self._model.add_constraint(
-            self._model.sum(self._F[v] for v in self._facilities) == self._k,
-            ctname="Exactly_K_facilities"
+            self._model.sum(self._F[v] for v in self._facilities) <= self._k,
+            ctname="At_most_K_facilities"
         )
 
         # each client connected to exactly one facility
