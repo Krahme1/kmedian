@@ -1,7 +1,10 @@
 """
+This script checks that the CPLEX k-facility solver computes the correct
+optimum, by running it on two tiny examples whose answers are known by hand.
+
 Hand-verification test for CPLEXKFSolver (k-facility location).
 
-Run this from the root of your kmedian folder on Nibi:
+Run this from the root of kmedian folder on Nibi:
     module load python/3.11
     source ~/kmedian-env/bin/activate
     cd ~/scratch/kmedian
