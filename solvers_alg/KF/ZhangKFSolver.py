@@ -44,13 +44,17 @@ class ZhangKFSolver(KFSolver):
     def getSelectedFacilities(self):
         return self._selectedFacilities
 
-    def solve(self, runNum=None):
+    def solve(self, runNum=None, starter_facilities=None):
         if self._random_seed is not None:
             random.seed(self._random_seed)
 
         start_time = time.time()
 
-        current_facilities = random.sample(range(self._n), self._k)
+        # use the shared starting solution if provided, else random
+        if starter_facilities is None:
+            current_facilities = random.sample(range(self._n), self._k)
+        else:
+            current_facilities = [int(f) for f in starter_facilities]
         current_value = calculate_distance_with_facility_cost(
             self._graph, current_facilities, self._scaled_costs, self._n
         )
