@@ -55,7 +55,7 @@ class SameiSolisObaKFSolver(KFSolver):
     def setCosts(self, costs):
         self._costs = costs
 
-    def solve(self, runNum=None):
+    def solve(self, runNum=None, starter_facilities=None):
         """
         Paper-style implementation:
 
@@ -74,7 +74,13 @@ class SameiSolisObaKFSolver(KFSolver):
             random.seed(self._random_seed)
 
         # Best-so-far solution S starts with a random set of k facilities
-        best_overall_facilities = self._random_initialize(self._k)
+        # Roberto's recipe: S = the shared starting solution (k facilities).
+        import random as _random
+        if starter_facilities is None:
+            S = self._random_initialize(self._k)
+        else:
+            S = [int(f) for f in starter_facilities]
+        best_overall_facilities = list(S)
         best_overall_value = calculate_distance_with_facility_cost(
             self._graph, best_overall_facilities, self._costs, self._n
         )
@@ -85,7 +91,8 @@ class SameiSolisObaKFSolver(KFSolver):
         for i in range(1, self._k + 1):
             print(f"\nRunning local search for size {i}")
 
-            current_facilities = self._random_initialize(i)
+            # draw a random subset of i facilities from the shared set S
+            current_facilities = _random.sample(S, i)
             current_value = calculate_distance_with_facility_cost(
                 self._graph, current_facilities, self._costs, self._n
             )
