@@ -2,7 +2,7 @@
 #SBATCH --account=def-rsolisob_cpu
 #SBATCH --partition=cpubase_bycore_b4
 #SBATCH --time=3-00:00:00
-#SBATCH --mem=8G
+#SBATCH --mem=32G
 #SBATCH --cpus-per-task=4
 #SBATCH --output=cplex-%j.log
 
