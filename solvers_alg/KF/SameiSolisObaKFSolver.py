@@ -55,7 +55,7 @@ class SameiSolisObaKFSolver(KFSolver):
     def setCosts(self, costs):
         self._costs = costs
 
-    def solve(self, runNum=None, starter_facilities=None):
+    def solve(self, runNum=None, starter_facilities=None, time_limit=60.0):
         """
         Paper-style implementation:
 
@@ -69,6 +69,8 @@ class SameiSolisObaKFSolver(KFSolver):
         3. return S
         """
 
+        import time as _time
+        _t_start = _time.time()
         if self._random_seed is not None:
             import random
             random.seed(self._random_seed)
@@ -89,6 +91,9 @@ class SameiSolisObaKFSolver(KFSolver):
 
         # For each i = 1, ..., k
         for i in range(1, self._k + 1):
+            if _time.time() - _t_start > time_limit:
+                print(f"Time limit reached, stopping at size {i}")
+                break
             print(f"\nRunning local search for size {i}")
 
             # draw a random subset of i facilities from the shared set S
@@ -113,8 +118,13 @@ class SameiSolisObaKFSolver(KFSolver):
                 max_swap_size = min(self._swap_size, len(current_facilities), len(closed_facilities))
 
                 # Search all improving multi-swaps up to max_swap_size
+                _time_up = False
                 for s in range(1, max_swap_size + 1):
+                    if _time.time() - _t_start > time_limit:
+                        _time_up = True; break
                     for facilities_out in itertools.combinations(current_facilities, s):
+                        if _time.time() - _t_start > time_limit:
+                            _time_up = True; break
                         for facilities_in in itertools.combinations(closed_facilities, s):
                             trial_facilities = [f for f in current_facilities if f not in facilities_out]
                             trial_facilities.extend(facilities_in)
@@ -131,6 +141,8 @@ class SameiSolisObaKFSolver(KFSolver):
                     current_facilities = list(best_local_facilities)
                     current_value = best_local_value
                     improved = True
+                if _time_up:
+                    improved = False
 
                 if improved:
                     print("Iteration", iterations, "distance:", current_value)
