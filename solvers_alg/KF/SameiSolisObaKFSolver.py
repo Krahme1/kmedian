@@ -55,7 +55,7 @@ class SameiSolisObaKFSolver(KFSolver):
     def setCosts(self, costs):
         self._costs = costs
 
-    def solve(self, runNum=None, starter_facilities=None, time_limit=60.0):
+    def solve(self, runNum=None, starter_facilities=None, time_limit=30.0):
         """
         Paper-style implementation:
 

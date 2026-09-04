@@ -44,11 +44,12 @@ class ZhangKFSolver(KFSolver):
     def getSelectedFacilities(self):
         return self._selectedFacilities
 
-    def solve(self, runNum=None, starter_facilities=None):
+    def solve(self, runNum=None, starter_facilities=None, time_limit=30.0):
         if self._random_seed is not None:
             random.seed(self._random_seed)
 
         start_time = time.time()
+        _t_start = time.time()
 
         # use the shared starting solution if provided, else random
         if starter_facilities is None:
@@ -66,6 +67,8 @@ class ZhangKFSolver(KFSolver):
         iteration = 0
 
         while improved:
+            if time.time() - _t_start > time_limit:
+                break
             improved = False
             iteration += 1
 
